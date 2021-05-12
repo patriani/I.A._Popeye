@@ -1,40 +1,62 @@
 % ---------------------------------------------- Regras Mov {s()} -----
 
-
-
 %% ---------------------mov direita:
 %
-s([X,Y], [Xprox,Y],_,ListaGarrafa):-
+s([X,Y], [Xprox,Y],_,_,ListaGarrafa):-
     X<10,
     Xprox is X + 1,
-    not(pertence([Xprox,Y],ListaGarrafa)).
+    not(pertence([Xprox,Y],ListaGarrafa)),
+    posicaoBrutus(PB),
+    not(pertence([Xprox,Y],PB)).
+
+s([X,Y], [Xprox,Y],[CabecaObjetivos|_],_,_):-
+    X<10,
+    Xprox is X + 1,
+    posicaoBrutus(PB),
+    [CabecaObjetivos] == PB,
+    pertence([Xprox,Y],PB).
 
 
-s([X,Y], [Xprox2,Y],_,ListaGarrafa):-
+
+s([X,Y], [Xprox2,Y],_,_,ListaGarrafa):-
     X<9,
     Xprox is X + 1,
     pertence([Xprox,Y],ListaGarrafa),
     Xprox2 is X + 2,
-    not(pertence([Xprox2,Y],ListaGarrafa)).
+    not(pertence([Xprox2,Y],ListaGarrafa)),
+    posicaoBrutus(PB),
+    not(pertence([Xprox2,Y],PB)).
 
 %% ---------------------mov esquerda:
 %
-s([X,Y], [Xprox,Y],_,ListaGarrafa):-
+s([X,Y], [Xprox,Y],[CabecaObjetivos|_],_,ListaGarrafa):-
     X>1,
     Xprox is X - 1,
-    not(pertence([Xprox,Y],ListaGarrafa)).
+    not(pertence([Xprox,Y],ListaGarrafa)),
+    posicaoBrutus(PB),
+    [CabecaObjetivos] == PB,
+    pertence([Xprox,Y],PB).
+
+s([X,Y], [Xprox,Y],_,_,ListaGarrafa):-
+    X>1,
+    Xprox is X - 1,
+    not(pertence([Xprox,Y],ListaGarrafa)),
+    posicaoBrutus(PB),
+    not(pertence([Xprox,Y],PB)).
 
 
-s([X,Y], [Xprox2,Y],_,ListaGarrafa):-
+s([X,Y], [Xprox2,Y],_,_,ListaGarrafa):-
     X>2,
     Xprox is X -1,
     pertence([Xprox,Y],ListaGarrafa),
     Xprox2 is X - 2,
-    not(pertence([Xprox2,Y],ListaGarrafa)).
+    not(pertence([Xprox2,Y],ListaGarrafa)),
+    posicaoBrutus(PB),
+    not(pertence([Xprox2,Y],PB)).
 
 %%---------------------mov cima direita:
 %
-s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
+s([X,Y], [Xprox,Yprox],_,ListaEscadas,_):-
     X<10,
     Y<5,
     pertence([X,Y],ListaEscadas),
@@ -44,7 +66,7 @@ s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
 
 %%---------------------mov cima esquerda:
 %
-s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
+s([X,Y], [Xprox,Yprox],_,ListaEscadas,_):-
     X>1,
     Y<5,
     pertence([X,Y],ListaEscadas),
@@ -54,7 +76,7 @@ s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
 
 %%--------------------mov baixo direita:
 %
-s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
+s([X,Y], [Xprox,Yprox],_,ListaEscadas,_):-
     X<10,
     Y>1,
     Xprox is X + 1,
@@ -64,7 +86,7 @@ s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
 
 %%---------------------mov baixo esquerda:
 %
-s([X,Y], [Xprox,Yprox], ListaEscadas,_):-
+s([X,Y], [Xprox,Yprox],_, ListaEscadas,_):-
     X>1,
     Y>1,
     Xprox is X - 1,
@@ -88,26 +110,31 @@ tamanho([_|Cauda],N):-
         N is N1+1.
 
 % -------------------------------------------Fatos mapa:
+%escada([2,1]).
+%escada([3,2]).
+%escada([5,2]).
+%escada([4,3]).
+%escada([9,3]).
+%escada([10,4]).
+%escada([7,4]).
+%escada([6,5]).
+
+escada([1,2]).
 escada([2,1]).
-escada([3,2]).
 escada([5,2]).
-escada([4,3]).
-escada([9,3]).
-escada([10,4]).
-escada([7,4]).
-escada([6,5]).
+escada([4,1]).
 
-%coracao([]).
-coracao([4,2]).
-coracao([10,3]).
-coracao([8,4]).
-coracao([10,5]).
+coracao([4,1]).
+%coracao([4,2]).
+%coracao([10,3]).
+%coracao([8,4]).
+%coracao([10,5]).
 
-garrafa([4,1]).
+garrafa([]).
 
 
-posicaoEspinafre([[4,4]]). %posições iguais para teste
-posicaoBrutus([[1,1]]).
+posicaoEspinafre([]). %posições iguais para teste
+posicaoBrutus([[3,1]]).
 
 %  TODO: implementar regra para não permitir dois objetos na mesma
 %  posição.
@@ -141,10 +168,10 @@ concatena([],L,L).
 % estado atual dela. Após feito isso este estado atual eh acrescido à
 % ListaSucessores.
 
-estende([EstadoAtual|Caminho],ListaSucessores,ListaEscadas,ListaGarrafas):-
-	bagof([Sucessor,EstadoAtual|Caminho], (s(EstadoAtual,Sucessor,ListaEscadas,ListaGarrafas), not(pertence(Sucessor,[EstadoAtual|Caminho]))), ListaSucessores),!. %pesquisar
+estende([EstadoAtual|Caminho],ListaSucessores,ListaObjetivos,ListaEscadas,ListaGarrafas):-
+	bagof([Sucessor,EstadoAtual|Caminho], (s(EstadoAtual,Sucessor,ListaObjetivos,ListaEscadas,ListaGarrafas), not(pertence(Sucessor,[EstadoAtual|Caminho]))), ListaSucessores),!. %pesquisar
 
-estende(_,[],_,_).
+estende(_,[],_,_,_).
 
 pertence(E, [E|_]).
 pertence(E, [_|Cauda]):- pertence(E, Cauda).
@@ -160,7 +187,7 @@ bl([[EstadoAtual|Caminho]|_],CaminhoSolucao,ListaObjetivos,CaminhoTemp,ListaEsca
         meta([EstadoAtual|Caminho],CaminhoSolucao,ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas). %achou resultado na cabeça da lista de análise: forma "CaminhoSolução" com EstadoAtual + Caminho percorrido até ele.
 
 bl([Cabeca|Cauda], CaminhoSolucao, ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas):-
-	estende(Cabeca,ListaSucessores,ListaEscadas,ListaGarrafas),
+	estende(Cabeca,ListaSucessores,ListaObjetivos,ListaEscadas,ListaGarrafas),
 	concatena(Cauda,ListaSucessores,NovaFronteira),
 	bl(NovaFronteira, CaminhoSolucao, ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas).
 
@@ -184,3 +211,8 @@ main(EstadoInicial,CaminhoSolucao) :-
         formaListaEscadas(ListaEscadas),
         formaListaGarrafas(ListaGarrafas),
 	solucao_bl(EstadoInicial, CaminhoSolucao, ListaObjetivos,[],ListaEscadas,ListaGarrafas).
+
+
+
+
+
