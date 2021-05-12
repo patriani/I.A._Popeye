@@ -1,13 +1,80 @@
 % ---------------------------------------------- Regras Mov {s()} -----
 
-%% mov direita
- s([X,Y], [Xprox,Y]):- X<10, Xprox is X + 1. % adicionar
-% not(pertence([Xprox,Y],ListaGarrafa)). implementar sucessão para salto
 
-%% mov esquerda
-s([X,Y], [Xprox,Y]):-
-        X>0,
-        Xprox is X - 1.
+
+%% ---------------------mov direita:
+%
+s([X,Y], [Xprox,Y],_,ListaGarrafa):-
+    X<10,
+    Xprox is X + 1,
+    not(pertence([Xprox,Y],ListaGarrafa)).
+
+
+s([X,Y], [Xprox2,Y],_,ListaGarrafa):-
+    X<9,
+    Xprox is X + 1,
+    pertence([Xprox,Y],ListaGarrafa),
+    Xprox2 is X + 2,
+    not(pertence([Xprox2,Y],ListaGarrafa)).
+
+%% ---------------------mov esquerda:
+%
+s([X,Y], [Xprox,Y],_,ListaGarrafa):-
+    X>1,
+    Xprox is X - 1,
+    not(pertence([Xprox,Y],ListaGarrafa)).
+
+
+s([X,Y], [Xprox2,Y],_,ListaGarrafa):-
+    X>2,
+    Xprox is X -1,
+    pertence([Xprox,Y],ListaGarrafa),
+    Xprox2 is X - 2,
+    not(pertence([Xprox2,Y],ListaGarrafa)).
+
+%%---------------------mov cima direita:
+%
+s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
+    X<10,
+    Y<5,
+    pertence([X,Y],ListaEscadas),
+    Xprox is X + 1,
+    Yprox is Y + 1,
+    pertence([Xprox,Yprox],ListaEscadas).
+
+%%---------------------mov cima esquerda:
+%
+s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
+    X>1,
+    Y<5,
+    pertence([X,Y],ListaEscadas),
+    Xprox is X - 1,
+    Yprox is Y + 1,
+    pertence([Xprox,Yprox],ListaEscadas).
+
+%%--------------------mov baixo direita:
+%
+s([X,Y], [Xprox,Yprox],ListaEscadas,_):-
+    X<10,
+    Y>1,
+    Xprox is X + 1,
+    Yprox is Y - 1,
+    pertence([X,Y],ListaEscadas),
+	pertence([Xprox,Yprox],ListaEscadas).
+
+%%---------------------mov baixo esquerda:
+%
+s([X,Y], [Xprox,Yprox], ListaEscadas,_):-
+    X>1,
+    Y>1,
+    Xprox is X - 1,
+    Yprox is Y - 1,
+    pertence([X,Y],ListaEscadas),
+    pertence([Xprox,Yprox],ListaEscadas).
+
+
+
+
 
 % adicionar not(pertence([Xprox,Y],ListaGarrafa)). --> anda uma casa se estiver livre
 % implementar sucessão para salto --> proxima casa está ocupada por
@@ -30,13 +97,17 @@ escada([10,4]).
 escada([7,4]).
 escada([6,5]).
 
-coracao([6,1]).
-coracao([5,1]).
-%coracao([8,4]).
-%coracao([8,5]).
+%coracao([]).
+coracao([4,2]).
+coracao([10,3]).
+coracao([8,4]).
+coracao([10,5]).
 
-posicaoEspinafre([]). %posições iguais para teste
-posicaoBrutus([]).
+garrafa([4,1]).
+
+
+posicaoEspinafre([[4,4]]). %posições iguais para teste
+posicaoBrutus([[1,1]]).
 
 %  TODO: implementar regra para não permitir dois objetos na mesma
 %  posição.
@@ -47,9 +118,9 @@ posicaoBrutus([]).
 formaListaCoracoes(ListaCoracoes):-bagof(Coordenada,coracao(Coordenada),ListaCoracoes).
 
 %A condição de parada desse bagof() será: acabaram os fatos escada(Coordenada).
-formaListaEscada(ListaEscadas):-bagof(Coordenada,escada(Coordenada),ListaEscadas).
+formaListaEscadas(ListaEscadas):-bagof(Coordenada,escada(Coordenada),ListaEscadas).
 
-%listaObjetivos([]).
+formaListaGarrafas(ListaGarrafas):-bagof(Coordenada,garrafa(Coordenada),ListaGarrafas).
 
 formaListaObjetivos(R2):-
         formaListaCoracoes(LC),
@@ -70,45 +141,46 @@ concatena([],L,L).
 % estado atual dela. Após feito isso este estado atual eh acrescido à
 % ListaSucessores.
 
-estende([EstadoAtual|Caminho],ListaSucessores):-
-	bagof([Sucessor,EstadoAtual|Caminho], (s(EstadoAtual,Sucessor), not(pertence(Sucessor,[EstadoAtual|Caminho]))), ListaSucessores),!. %pesquisar
+estende([EstadoAtual|Caminho],ListaSucessores,ListaEscadas,ListaGarrafas):-
+	bagof([Sucessor,EstadoAtual|Caminho], (s(EstadoAtual,Sucessor,ListaEscadas,ListaGarrafas), not(pertence(Sucessor,[EstadoAtual|Caminho]))), ListaSucessores),!. %pesquisar
 
-estende(_,[]).
+estende(_,[],_,_).
 
 pertence(E, [E|_]).
 pertence(E, [_|Cauda]):- pertence(E, Cauda).
 
 % --------------------------------------------codigo bl():
 
-solucao_bl(EstadoInicial, CaminhoSolucao,ListaObjetivos,CaminhoTemp):-bl([[EstadoInicial]], CaminhoSolucao,ListaObjetivos,CaminhoTemp). %encapsula
-
+solucao_bl(EstadoInicial, CaminhoSolucao,ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas):-bl([[EstadoInicial]], CaminhoSolucao,ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas). %encapsula
 
 
 % - A solução unifica com [EstadoAtual|Caminho] pq se o meta eh true a
 % solução eh o estado atual.
-bl([[EstadoAtual|Caminho]|_],CaminhoSolucao,ListaObjetivos,CaminhoTemp):-
-        meta([EstadoAtual|Caminho],CaminhoSolucao,ListaObjetivos,CaminhoTemp). %achou resultado na cabeça da lista de análise: forma "CaminhoSolução" com EstadoAtual + Caminho percorrido até ele.
+bl([[EstadoAtual|Caminho]|_],CaminhoSolucao,ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas):-
+        meta([EstadoAtual|Caminho],CaminhoSolucao,ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas). %achou resultado na cabeça da lista de análise: forma "CaminhoSolução" com EstadoAtual + Caminho percorrido até ele.
 
-bl([Cabeca|Cauda], CaminhoSolucao, ListaObjetivos,CaminhoTemp):-
-	estende(Cabeca,ListaSucessores),
+bl([Cabeca|Cauda], CaminhoSolucao, ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas):-
+	estende(Cabeca,ListaSucessores,ListaEscadas,ListaGarrafas),
 	concatena(Cauda,ListaSucessores,NovaFronteira),
-	bl(NovaFronteira, CaminhoSolucao, ListaObjetivos,CaminhoTemp).
+	bl(NovaFronteira, CaminhoSolucao, ListaObjetivos,CaminhoTemp,ListaEscadas,ListaGarrafas).
 
-meta([EstadoAtual|Caminho],CaminhoSolucao,[CabecaObjetivo|CaudaObjetivo],CaminhoTemp):-
+meta([EstadoAtual|Caminho],CaminhoSolucao,[CabecaObjetivo|CaudaObjetivo],CaminhoTemp,_,_):-
         EstadoAtual == CabecaObjetivo, % o estado atual realmente corresponde a um objetivo
         CaudaObjetivo == [], % É o ultimo objetivo (deverá ser o Brutus) e a busca pode terminar
         concatena([EstadoAtual|Caminho],CaminhoTemp,CaminhoSolucao).
 
 %separa a lista de objetivo em CabecaObjetivo e CaudaObjetivo
-meta([EstadoAtual|Caminho],CaminhoSolucao,[CabecaObjetivo|CaudaObjetivo],CaminhoTemp):-
+meta([EstadoAtual|Caminho],CaminhoSolucao,[CabecaObjetivo|CaudaObjetivo],CaminhoTemp,ListaEscadas,ListaGarrafas):-
         EstadoAtual == CabecaObjetivo, % o estado atual realmente corresponde a um objetivo
         not(CaudaObjetivo == []),
         concatena([EstadoAtual|Caminho],CaminhoTemp,CaminhoTemp2),
-        solucao_bl(EstadoAtual,CaminhoSolucao,CaudaObjetivo,CaminhoTemp2),!. %sem esse corte a busca continua para outro meta e acaba falhando a busca% toda
+        solucao_bl(EstadoAtual,CaminhoSolucao,CaudaObjetivo,CaminhoTemp2,ListaEscadas,ListaGarrafas),!. %sem esse corte a busca continua para outro meta e acaba falhando a busca% toda
 
 
 %--------------------------------------------- main():
 %
 main(EstadoInicial,CaminhoSolucao) :-
         formaListaObjetivos(ListaObjetivos),
-	solucao_bl(EstadoInicial, CaminhoSolucao, ListaObjetivos,[]).
+        formaListaEscadas(ListaEscadas),
+        formaListaGarrafas(ListaGarrafas),
+	solucao_bl(EstadoInicial, CaminhoSolucao, ListaObjetivos,[],ListaEscadas,ListaGarrafas).
