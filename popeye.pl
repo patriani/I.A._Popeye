@@ -61,7 +61,7 @@ s([X,Y], [Xprox,Yprox],_,ListaEscadas,_):- % movimentação em escada subindo pa
     pertence([X,Y],ListaEscadas),
     Xprox is X + 1,
     Yprox is Y + 1,
-    pertence([Xprox,Yprox],ListaEscadas).
+    pertence([Xprox,Yprox],ListaEscadas), link([X,Y],[Xprox,Yprox]).
 
 %%---------------------mov cima esquerda:
 %
@@ -71,7 +71,7 @@ s([X,Y], [Xprox,Yprox],_,ListaEscadas,_):- % movimentação em escada subindo pa
     pertence([X,Y],ListaEscadas),
     Xprox is X - 1,
     Yprox is Y + 1,
-    pertence([Xprox,Yprox],ListaEscadas).
+    pertence([Xprox,Yprox],ListaEscadas), link([X,Y],[Xprox,Yprox]).
 
 %%--------------------mov baixo direita:
 %
@@ -81,7 +81,7 @@ s([X,Y], [Xprox,Yprox],_,ListaEscadas,_):- % movimentação em escada descendo p
     Xprox is X + 1,
     Yprox is Y - 1,
     pertence([X,Y],ListaEscadas),
-	pertence([Xprox,Yprox],ListaEscadas).
+	pertence([Xprox,Yprox],ListaEscadas), link([X,Y],[Xprox,Yprox]).
 
 %%---------------------mov baixo esquerda:
 %
@@ -91,34 +91,58 @@ s([X,Y], [Xprox,Yprox],_, ListaEscadas,_):- % movimentação em escada descendo 
     Xprox is X - 1,
     Yprox is Y - 1,
     pertence([X,Y],ListaEscadas),
-    pertence([Xprox,Yprox],ListaEscadas).
+    pertence([Xprox,Yprox],ListaEscadas), link([X,Y],[Xprox,Yprox]).
 
 % -------------------------------------------Fatos mapa:
+% Origem e destino das escadas
+link([4,1],[5,2]).
+link([5,2],[4,1]).
+link([10,2],[9,3]).
+link([9,3],[10,2]).
+link([9,3],[10,4]).
+link([10,4],[9,3]).
+link([2,3],[1,4]).
+link([1,4],[2,3]).
+link([3,4],[2,5]).
+link([2,5],[3,4]).
+link([6,4],[7,5]).
+link([7,5],[6,4]).
 
-escada([3,1]).
-escada([4,2]).
-escada([2,2]).
-escada([3,3]).
-escada([7,3]).
-escada([6,4]).
+%Lista de escadas
+
+escada([4,1]).
+escada([5,2]).
+escada([10,2]).
+escada([2,3]).
+escada([9,3]).
+escada([1,4]).
 escada([3,4]).
-escada([4,5]).
+escada([6,4]).
+escada([10,4]).
+escada([2,5]).
+escada([7,5]).
 
-coracao([10,2]).
-coracao([5,3]).
-coracao([1,4]).
-coracao([3,5]).
+%coracao([]).
+coracao([10,1]).
+coracao([1,2]).
+coracao([2,2]).
+coracao([3,3]).
+coracao([7,3]).
+coracao([9,5]).
 
-garrafa([5,1]).
-garrafa([6,1]).
-garrafa([2,3]).
+garrafa([2,1]).
+garrafa([8,1]).
+garrafa([7,2]).
+garrafa([5,3]).
+garrafa([6,3]).
+garrafa([4,4]).
+garrafa([5,4]).
 garrafa([9,4]).
-garrafa([2,5]).
-garrafa([6,5]).
+garrafa([8,5]).
 
-posicaoEspinafre([[8,3]]). % posição dentro de uma lista para unificar com a lista formada por corações na construção de Lista de Objetivos
-posicaoBrutus([[10,5]]). % posição dentro de uma lista para unificar com a lista formada por corações na construção de Lista de Objetivos
 
+posicaoEspinafre([[4,3]]). %posições iguais para teste
+posicaoBrutus([[10,5]]).
 %------------------------------------Organização dos fatos:
 
 %A condição de parada desse bagof() será: acabaram os fatos escada(Coordenada).
@@ -208,6 +232,8 @@ meta([EstadoAtual|Caminho],CaminhoSolucao,[CabecaObjetivo|CaudaObjetivo],Caminho
         concatena([EstadoAtual|Caminho],CaminhoTemp,CaminhoTemp2),
         solucao_bl(EstadoAtual,CaminhoSolucao,CaudaObjetivo,CaminhoTemp2,ListaEscadas,ListaGarrafas,PontuacaoCorrente,PontuacaoFinal),!.
 
+
+
 %--------------------------------------------- main():
 %
 main(EstadoInicial,CaminhoSolucao,PontuacaoFinal) :-
@@ -215,3 +241,10 @@ main(EstadoInicial,CaminhoSolucao,PontuacaoFinal) :-
         formaListaEscadas(ListaEscadas),
         formaListaGarrafas(ListaGarrafas),
 	solucao_bl(EstadoInicial, CaminhoSolucao, ListaObjetivos,[],ListaEscadas,ListaGarrafas,0,PontuacaoFinal).
+
+
+
+%!  ?- main([1,1],S,P).
+% *Exemplo de Pergunta para início do Popeye em [1,1] e pedido do
+% caminho S e pontuação P.
+
